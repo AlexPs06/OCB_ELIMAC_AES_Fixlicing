@@ -137,6 +137,20 @@ void aes128_keyschedule_ffs(uint32_t* rkeys, const unsigned char* key0,
 }
 
 /******************************************************************************
+* Fully bitsliced AES-128 key schedule to match the fully-fixsliced (ffs)
+* representation. Note that it is possible to pass two different keys as input
+* parameters if one wants to encrypt 2 blocks with two different keys.
+******************************************************************************/
+void aes128_2rounds_keyschedule_ffs(uint32_t* rkeys, const unsigned char* key0,
+						const unsigned char* key1) {
+	packing(rkeys, key0, key1); 	// packs the keys into the bitsliced state
+	packing(rkeys+32, key0+16, key1+16); 	// packs the keys into the bitsliced state
+	// memcpy(rkeys+8, rkeys, 32);
+	// memcpy(rkeys+16, rkeys+8, 32);
+	// // inv_shiftrows_1(rkeys+8); 		// to match fixslicing
+	// memcpy(rkeys+24, rkeys+16, 32);
+}
+/******************************************************************************
 * Fully bitsliced AES-256 key schedule to match the fully-fixsliced (ffs)
 * representation. Note that it is possible to pass two different keys as input
 * parameters if one wants to encrypt 2 blocks with two different keys.
