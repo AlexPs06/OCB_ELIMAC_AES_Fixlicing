@@ -13,6 +13,14 @@
 #include <string.h> 	// for memcpy
 #include "aes.h"
 #include "internal-aes.h"
+#include <stdio.h>
+void print_array_2(uint8_t * plaintext, uint8_t size){
+    for (size_t i = 0; i < size; i++){
+        printf("%02x ", plaintext[i]);
+    }
+    printf("\n");
+}
+
 
 /******************************************************************************
 * Applies ShiftRows^(-1) on a round key to match the fixsliced representation.
@@ -55,6 +63,19 @@ static void inv_shiftrows_3(uint32_t* rkey) {
 * the value should be 2, 26 otherwise.
 ******************************************************************************/
 static void xor_columns(uint32_t* rkeys, int idx_xor, int idx_ror) {
+	rkeys[1] ^= 0xffffffff; 			// NOT that are omitted in S-box
+	rkeys[2] ^= 0xffffffff; 			// NOT that are omitted in S-box
+	rkeys[6] ^= 0xffffffff; 			// NOT that are omitted in S-box
+	rkeys[7] ^= 0xffffffff; 			// NOT that are omitted in S-box
+	for(int i = 0; i < 8; i++) {
+		rkeys[i] = (rkeys[i-idx_xor] ^ ROR(rkeys[i], idx_ror))  & 0xc0c0c0c0;
+		rkeys[i] |= ((rkeys[i-idx_xor] ^ rkeys[i] >> 2) & 0x30303030);
+		rkeys[i] |= ((rkeys[i-idx_xor] ^ rkeys[i] >> 2) & 0x0c0c0c0c);
+		rkeys[i] |= ((rkeys[i-idx_xor] ^ rkeys[i] >> 2) & 0x03030303);
+	}
+}
+
+static void xor_columns_0(uint32_t* rkeys, int idx_xor, int idx_ror) {
 	rkeys[1] ^= 0xffffffff; 			// NOT that are omitted in S-box
 	rkeys[2] ^= 0xffffffff; 			// NOT that are omitted in S-box
 	rkeys[6] ^= 0xffffffff; 			// NOT that are omitted in S-box
@@ -134,6 +155,13 @@ void aes128_keyschedule_ffs(uint32_t* rkeys, const unsigned char* key0,
 		rkeys[i*8 + 6] ^= 0xffffffff; 	// NOT to speed up SBox calculations
 		rkeys[i*8 + 7] ^= 0xffffffff; 	// NOT to speed up SBox calculations
 	}
+
+	// for (size_t i = 0; i < 88; i++){
+	// 	printf("%x \n", rkeys[i]);
+	// }
+	
+
+
 }
 
 /******************************************************************************
@@ -143,11 +171,16 @@ void aes128_keyschedule_ffs(uint32_t* rkeys, const unsigned char* key0,
 ******************************************************************************/
 void aes128_2rounds_keyschedule_ffs(uint32_t* rkeys, const unsigned char* key0,
 						const unsigned char* key1) {
-	packing(rkeys, key0, key1); 	// packs the keys into the bitsliced state
-	packing(rkeys+32, key0+16, key1+16); 	// packs the keys into the bitsliced state
+	// packing(rkeys, key0, key1); 	// packs the keys into the bitsliced state
 	// memcpy(rkeys+8, rkeys, 32);
+	// // sbox(rkeys+8);
+	// // rkeys[15] ^= 0x00000300; 		// 1st rconst
+	// xor_columns(rkeys+8, 8, 2); 	// Rotword and XOR between the columns
 	// memcpy(rkeys+16, rkeys+8, 32);
-	// // inv_shiftrows_1(rkeys+8); 		// to match fixslicing
+	// // sbox(rkeys+16);
+	// rkeys[22] ^= 0x00000300;		// 2nd rconst
+	// xor_columns(rkeys+16, 8, 2); 	// Rotword and XOR between the columns
+	// inv_shiftrows_1(rkeys+8); 		// to match fixslicing
 	// memcpy(rkeys+24, rkeys+16, 32);
 }
 /******************************************************************************

@@ -572,12 +572,12 @@ void two_Rounds_aes128_encrypt_ffs(unsigned char* ctext0, unsigned char * ctext1
 	// ark(state, rkeys_ffs); 				// key whitening
 	sbox(state); 						// 1st round
 	mixcolumns_0(state); 				// 1st round
-	// ark(state, rkeys_ffs + 8); 			// 1st round
-	ark(state, rkeys_ffs); 			// 1st round
+	ark(state, rkeys_ffs + 8); 			// 1st round
+	// ark(state, rkeys_ffs); 			// 1st round
 	sbox(state); 						// 2nd round
 	mixcolumns_1(state); 				// 2nd round
-	// ark(state, rkeys_ffs + 16); 		// 2nd round
-	ark(state, rkeys_ffs + 8); 		// 2nd round
+	ark(state, rkeys_ffs + 16); 		// 2nd round
+	// ark(state, rkeys_ffs + 8); 		// 2nd round
 	double_shiftrows(state); 			// 10th round (resynchronization)
 	unpacking(ctext0, ctext1, state);	// unpacks the state to the output
 }
