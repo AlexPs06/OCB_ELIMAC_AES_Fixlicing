@@ -233,45 +233,6 @@ static void double_shiftrows(uint32_t* state) {
         SWAPMOVE(state[i], state[i], 0x0f000f00, 4);
 }
 
-/******************************************************************************
-* Applies the ShiftRows transformation once (i.e. SR) on the internal state.
-******************************************************************************/
-static void single_shiftrows(uint32_t* state ) {
-    
-	
-	uint32_t tmp;
-	for(int i = 0; i < 8; i++){			
-									// xx 0f xx xx  4
-        // SWAPMOVE(state[i], state[i], 0x000f0000, 4);
-	}
-
-
-	// sbox(state); 						// 8th round
-
-	uint32_t t0 = 0, t1, t2=0;
-	t0 = state[7] ^ ROR(state[7],8);
-	t2 = state[0] ^ ROR(state[0],8);
-	state[7] = t2 ^ ROR(state[7], 8) ^ ROR(t0, 16);
-
-	// state[7] =  ROR(state[7], 8);
-
-	double_shiftrows(state);
-
-	// t1 = state[6] ^ ROR(state[6],8);
-	// state[6] = t0 ^ t2 ^ ROR(state[6], 8) ^ ROR(t1,16);
-	// state[6] = t0 ^ t2 ^ ROR(state[6], 8) ^ ROR(t1,16);
-	// t0 = state[5] ^ ROR(state[5],8);
-	// state[5] = t1 ^ ROR(state[5],8) ^ ROR(t0,16);
-	// t1 = state[4] ^ ROR(state[4],8);
-	// state[4] = t0 ^ t2 ^ ROR(state[4],8) ^ ROR(t1,16);
-	// t0 = state[3] ^ ROR(state[3],8);
-	// state[3] = t1 ^ t2 ^ ROR(state[3],8) ^ ROR(t0,16);
-	// t1 = state[2] ^ ROR(state[2],8);
-	// state[2] = t0 ^ ROR(state[2],8) ^ ROR(t1,16);
-	// t0 = state[1] ^ ROR(state[1],8);
-	// state[1] = t1 ^ ROR(state[1],8) ^ ROR(t0,16);
-	// state[0] = t0 ^ ROR(state[0],8) ^ ROR(t2,16);
-}
 
 /******************************************************************************
 * Computation of the MixColumns transformation in the fixsliced representation.
@@ -557,7 +518,7 @@ void aes256_encrypt_sfs(unsigned char* ctext0, unsigned char* ctext1,
 
 
 /******************************************************************************
-* Fully-fixsliced AES-128 encryption (the ShiftRows is completely omitted).
+* Fully-fixsliced of two AES-128 rounds encryption (the ShiftRows is completely omitted).
 * Two 128-bit blocks ptext0, ptext1 are encrypted into ctext0, ctext1 without
 * any operating mode. The round keys are assumed to be pre-computed.
 * Note that it can be included in serial operating modes since ptext0, ptext1 
@@ -569,22 +530,54 @@ void two_Rounds_aes128_encrypt_ffs(unsigned char* ctext0, unsigned char * ctext1
 					const uint32_t* rkeys_ffs) {
 	uint32_t state[8]; 					// 256-bit internal state
 	packing(state, ptext0, ptext1);		// packs into bitsliced representation
-	// ark(state, rkeys_ffs); 				// key whitening
+	ark(state, rkeys_ffs); 				// key whitening
 	sbox(state); 						// 1st round
 	mixcolumns_0(state); 				// 1st round
 	ark(state, rkeys_ffs + 8); 			// 1st round
-	// ark(state, rkeys_ffs); 			// 1st round
 	sbox(state); 						// 2nd round
 	mixcolumns_1(state); 				// 2nd round
 	ark(state, rkeys_ffs + 16); 		// 2nd round
-	// ark(state, rkeys_ffs + 8); 		// 2nd round
 	double_shiftrows(state); 			// 10th round (resynchronization)
 	unpacking(ctext0, ctext1, state);	// unpacks the state to the output
 }
+/******************************************************************************
+* Fully-fixsliced of four AES-128 rounds encryption (the ShiftRows is completely omitted).
+* Two 128-bit blocks ptext0, ptext1 are encrypted into ctext0, ctext1 without
+* any operating mode. The round keys are assumed to be pre-computed.
+* Note that it can be included in serial operating modes since ptext0, ptext1 
+* can refer to the same block. Moreover ctext parameters can be the same as
+* ptext parameters.
+******************************************************************************/
+void four_Rounds_aes128_encrypt_ffs(unsigned char* ctext0, unsigned char * ctext1,
+					const unsigned char* ptext0, const unsigned char* ptext1,
+					const uint32_t* rkeys_ffs) {
+	uint32_t state[8]; 					// 256-bit internal state
+	packing(state, ptext0, ptext1);		// packs into bitsliced representation
+	ark(state, rkeys_ffs); 				// key whitening
+	sbox(state); 						// 1st round
+	mixcolumns_0(state); 				// 1st round
+	ark(state, rkeys_ffs + 8); 			// 1st round
+	sbox(state); 						// 2nd round
+	mixcolumns_1(state); 				// 2nd round
+	ark(state, rkeys_ffs + 16); 		// 2nd round
+	sbox(state); 						// 3rd round
+	mixcolumns_2(state); 				// 3rd round
+	ark(state, rkeys_ffs + 24); 		// 3rd round
+	sbox(state); 						// 4th round
+	mixcolumns_3(state); 				// 4th round
+	ark(state, rkeys_ffs + 32); 		// 4th round
+	unpacking(ctext0, ctext1, state);	// unpacks the state to the output
+}
 
-
-
-void seven_Rounds_aes128_encrypt_ffs(unsigned char* ctext0, unsigned char * ctext1,
+/******************************************************************************
+* Fully-fixsliced of six AES-128 rounds encryption (the ShiftRows is completely omitted).
+* Two 128-bit blocks ptext0, ptext1 are encrypted into ctext0, ctext1 without
+* any operating mode. The round keys are assumed to be pre-computed.
+* Note that it can be included in serial operating modes since ptext0, ptext1 
+* can refer to the same block. Moreover ctext parameters can be the same as
+* ptext parameters.
+******************************************************************************/
+void six_Rounds_aes128_encrypt_ffs(unsigned char* ctext0, unsigned char * ctext1,
 					const unsigned char* ptext0, const unsigned char* ptext1,
 					const uint32_t* rkeys_ffs) {
 	uint32_t state[8]; 					// 256-bit internal state
@@ -608,64 +601,8 @@ void seven_Rounds_aes128_encrypt_ffs(unsigned char* ctext0, unsigned char * ctex
 	sbox(state);						// 6th round
 	mixcolumns_1(state); 				// 6th round
 	ark(state, rkeys_ffs + 48); 		// 6th round
-	sbox(state); 						// 7th round
-	mixcolumns_2(state); 				// 7th round
-	ark(state, rkeys_ffs + 56); 		// 7th round
-	// sbox(state); 						// 8th round
-	// mixcolumns_3(state); 				// 8th round
-	// ark(state, rkeys_ffs + 64); 		// 8th round
-	// unpacking(ctext0, ctext1, state);	// unpacks the state to the output
-	// for (size_t i = 0; i < 4; i++){
-	// 	printf("%02x \n",ctext0[i]);
-	// 	printf("%02x \n",ctext1[i]);
-	// }
-	
-	
-	single_shiftrows(state); 			// 10th round (resynchronization)
-	// double_shiftrows(state); 			// 10th round (resynchronization)
+	double_shiftrows(state); 			// 10th round (resynchronization)
 	unpacking(ctext0, ctext1, state);	// unpacks the state to the output
-	// int condicion = 1;
-	// int mask = 0x0000000F;
-	// uint32_t temp_state[8]; 					
-	// int contador=0;
-	// uint32_t t[4] = {0x89d3a50f, 
-	// 				 0x1aef255d, 
-	// 				 0x4a11bc84, 
-	// 				 0xe632d278};
-	// while ( condicion ){
-
-	// 	for (size_t i = 0; i < 8; i++){
-	// 		temp_state[i]=state[i];
-	// 	}
-
-	// 	single_shiftrows(temp_state, mask); 			// 10th round (resynchronization)
-	// 	unpacking(ctext0, ctext1, state);	// unpacks the state to the output
-
-	// 	condicion=0;
-	// 	for (size_t i = 0; i < 4; i++){
-	// 		if (temp_state[i] != t[i])
-	// 		{
-	// 			condicion=1;
-	// 			break;
-	// 		}
-			
-	// 	}
-		
-		
-	// 	mask = mask <<1;
-	// 	contador++;
-	// 	if (contador==32){
-	// 		condicion=0;
-	// 	}
-		
-
-	// }
-	// if (contador!=32){
-	// 	printf("%08x\n",mask);
-	// }
-	
-	
-	
 }
 
 

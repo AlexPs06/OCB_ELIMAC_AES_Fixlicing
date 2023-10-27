@@ -171,17 +171,68 @@ void aes128_keyschedule_ffs(uint32_t* rkeys, const unsigned char* key0,
 ******************************************************************************/
 void aes128_2rounds_keyschedule_ffs(uint32_t* rkeys, const unsigned char* key0,
 						const unsigned char* key1) {
-	// packing(rkeys, key0, key1); 	// packs the keys into the bitsliced state
-	// memcpy(rkeys+8, rkeys, 32);
-	// // sbox(rkeys+8);
-	// // rkeys[15] ^= 0x00000300; 		// 1st rconst
-	// xor_columns(rkeys+8, 8, 2); 	// Rotword and XOR between the columns
-	// memcpy(rkeys+16, rkeys+8, 32);
-	// // sbox(rkeys+16);
-	// rkeys[22] ^= 0x00000300;		// 2nd rconst
-	// xor_columns(rkeys+16, 8, 2); 	// Rotword and XOR between the columns
-	// inv_shiftrows_1(rkeys+8); 		// to match fixslicing
-	// memcpy(rkeys+24, rkeys+16, 32);
+	packing(rkeys, key0, key1); 	// packs the keys into the bitsliced state
+	memcpy(rkeys+8, rkeys, 32);
+	sbox(rkeys+8);
+	rkeys[15] ^= 0x00000300; 		// 1st rconst
+	xor_columns(rkeys+8, 8, 2); 	// Rotword and XOR between the columns
+	memcpy(rkeys+16, rkeys+8, 32);
+	sbox(rkeys+16);
+	rkeys[22] ^= 0x00000300;		// 2nd rconst
+	xor_columns(rkeys+16, 8, 2); 	// Rotword and XOR between the columns
+	inv_shiftrows_1(rkeys+8); 		// to match fixslicing
+	memcpy(rkeys+24, rkeys+16, 32);
+	// sbox(rkeys+24);
+	// rkeys[29] ^= 0x00000300;		// 3rd rconst
+	// xor_columns(rkeys+24, 8, 2); 	// Rotword and XOR between the columns
+	inv_shiftrows_2(rkeys+16); 		// to match fixslicing
+	// memcpy(rkeys+32, rkeys+24, 32);
+	// sbox(rkeys+32);
+
+	// rkeys[36] ^= 0x00000300; 		// 4th rconst
+	// xor_columns(rkeys+32, 8, 2); 	// Rotword and XOR between the columns
+	// inv_shiftrows_3(rkeys+24); 		// to match fixslicing
+	// memcpy(rkeys+40, rkeys+32, 32);	
+	// sbox(rkeys+40);
+	// rkeys[43] ^= 0x00000300; 		// 5th rconst
+	// xor_columns(rkeys+40, 8, 2); 	// Rotword and XOR between the columns
+	// memcpy(rkeys+48, rkeys+40, 32);
+	// sbox(rkeys+48);
+	// rkeys[50] ^= 0x00000300;		// 6th rconst
+	// xor_columns(rkeys+48, 8, 2); 	// Rotword and XOR between the columns
+	// inv_shiftrows_1(rkeys+40); 		// to match fixslicing
+	// memcpy(rkeys+56, rkeys+48, 32);
+	// sbox(rkeys+56);
+	// rkeys[57] ^= 0x00000300;		// 7th rconst
+	// xor_columns(rkeys+56, 8, 2); 	// Rotword and XOR between the columns
+	// inv_shiftrows_2(rkeys+48); 		// to match fixslicing
+	// memcpy(rkeys+64, rkeys+56, 32);
+	// sbox(rkeys+64);
+	// rkeys[64] ^= 0x00000300;		// 8th rconst
+	// xor_columns(rkeys+64, 8, 2); 	// Rotword and XOR between the columns
+	// inv_shiftrows_3(rkeys+56); 		// to match fixslicing
+	// memcpy(rkeys+72, rkeys+64, 32);
+	// sbox(rkeys+72);
+	// rkeys[79] ^= 0x00000300; 		// 9th rconst
+	// rkeys[78] ^= 0x00000300; 		// 9th rconst
+	// rkeys[76] ^= 0x00000300; 		// 9th rconst
+	// rkeys[75] ^= 0x00000300; 		// 9th rconst
+	// xor_columns(rkeys + 72, 8, 2); 	// Rotword and XOR between the columns
+	// memcpy(rkeys+80, rkeys+72, 32);
+	// sbox(rkeys+80);
+	// rkeys[86] ^= 0x00000300; 		// 10th rconst
+	// rkeys[85] ^= 0x00000300; 		// 10th rconst
+	// rkeys[83] ^= 0x00000300;		// 10th rconst
+	// rkeys[82] ^= 0x00000300; 		// 10th rconst
+	// xor_columns(rkeys+80, 8, 2); 	// Rotword and XOR between the columns
+	// inv_shiftrows_1(rkeys+72);
+	for(int i = 1; i < 3; i++) {
+		rkeys[i*8 + 1] ^= 0xffffffff; 	// NOT to speed up SBox calculations
+		rkeys[i*8 + 2] ^= 0xffffffff; 	// NOT to speed up SBox calculations
+		rkeys[i*8 + 6] ^= 0xffffffff; 	// NOT to speed up SBox calculations
+		rkeys[i*8 + 7] ^= 0xffffffff; 	// NOT to speed up SBox calculations
+	}
+
 }
 /******************************************************************************
 * Fully bitsliced AES-256 key schedule to match the fully-fixsliced (ffs)

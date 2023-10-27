@@ -44,13 +44,14 @@ void aes256_keyschedule_sfs_lut(uint32_t rkeys[120], const unsigned char key[32]
 void two_Rounds_aes128_encrypt_ffs(unsigned char* ctext0, unsigned char * ctext1,
 					const unsigned char* ptext0, const unsigned char* ptext1,
 					const uint32_t* rkeys_ffs);
-
-void aes128_2rounds_keyschedule_ffs(uint32_t rkeys[64], const unsigned char key0[32],
-						const unsigned char key1[32]);
-
-void seven_Rounds_aes128_encrypt_ffs(unsigned char* ctext0, unsigned char * ctext1,
+void four_Rounds_aes128_encrypt_ffs(unsigned char* ctext0, unsigned char * ctext1,
 					const unsigned char* ptext0, const unsigned char* ptext1,
 					const uint32_t* rkeys_ffs);
+void six_Rounds_aes128_encrypt_ffs(unsigned char* ctext0, unsigned char * ctext1,
+					const unsigned char* ptext0, const unsigned char* ptext1,
+					const uint32_t* rkeys_ffs);
+void aes128_2rounds_keyschedule_ffs(uint32_t rkeys[64], const unsigned char key0[32],
+						const unsigned char key1[32]);
 
 void eigth_Rounds_aes128_encrypt_ffs(unsigned char* ctext0, unsigned char * ctext1,
 					const unsigned char* ptext0, const unsigned char* ptext1,
