@@ -34,7 +34,6 @@ int main(){
 
 
     ELIMAC( plaintext,  plaintext_size,  key1,  key2, 4,  tag);
-
     // OCB(ctext0, ctext1, ptext0,  ptext1, key0,  key1);
 
     // print_array(ciphertext,16);
