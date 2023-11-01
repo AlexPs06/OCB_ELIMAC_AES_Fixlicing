@@ -92,7 +92,8 @@ int main(){
     printf("----------------Key-----------------\n");
     print_array(key,16);
 
-    OCB(plaintext,  ciphertext,  nonce, asociated_data, plaintext_size, asociated_data_size, key, tag);
+    // OCB(plaintext,  ciphertext,  nonce, asociated_data, plaintext_size, asociated_data_size, key, tag);
+    PMAC(nonce,asociated_data,asociated_data_size,key,tag);
 
     printf("----------------ciphertext-----------------\n");
     print_array(ciphertext,plaintext_size);

@@ -33,7 +33,7 @@ int main(){
     
 
 
-    ELIMAC( plaintext,  plaintext_size,  key1,  key2, 4,  tag);
+    ELIMAC( plaintext,  plaintext_size,  key1,  key2, 8,  tag);
     // OCB(ctext0, ctext1, ptext0,  ptext1, key0,  key1);
 
     // print_array(ciphertext,16);
@@ -51,11 +51,10 @@ void ELIMAC(unsigned char* plaintext,  const unsigned char plaintext_size, unsig
     unsigned char ptext0[plaintext_size];
     unsigned char ptext1[plaintext_size];
 
-
     unsigned char i_n1[16] = {0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0};
     unsigned char i_n2[16] = {0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0};
-
-
+    unsigned char i_n1_t[16] = {0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0};
+    unsigned char i_n2_t[16] = {0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0};
     unsigned char S1[bit_size];
     unsigned char S2[bit_size];
     
@@ -63,9 +62,7 @@ void ELIMAC(unsigned char* plaintext,  const unsigned char plaintext_size, unsig
     unsigned int add_nonce_1[4] = {1,1,1,1};
     unsigned int add_nonce_2[4] = {2,2,2,2};
 
-
     uint32_t rkeys_ffs[88];
-    uint32_t rkeys_ffs_zeros[88];
     uint32_t rkeys_ffs_H[88];
 
     for (size_t i = 0; i < plaintext_size; i++)
@@ -75,17 +72,12 @@ void ELIMAC(unsigned char* plaintext,  const unsigned char plaintext_size, unsig
     }    
 
     divide_plaintext(plaintext, ptext0, ptext1, plaintext_size);
-    
+
     for (size_t i = 0; i < bit_size; i++)
     {
         S1[i]=0;
         S2[i]=0;
     }    
-
-    for (size_t i = 0; i < 88; i++)
-    {
-        rkeys_ffs_zeros[i]=0;
-    }
 
     aes128_keyschedule_ffs(rkeys_ffs_H, key1, key1);
     aes128_keyschedule_ffs(rkeys_ffs, key2, key2);
@@ -94,13 +86,15 @@ void ELIMAC(unsigned char* plaintext,  const unsigned char plaintext_size, unsig
 
     for (int i = 0; i < block_size; i++){
 
-        add_nonce(add_nonce_0, (unsigned int *)i_n1,(unsigned int *)i_n1, 4);
-        add_nonce(add_nonce_1, (unsigned int *)i_n2,(unsigned int *)i_n2, 4);
+        add_nonce(add_nonce_0, (unsigned int *)i_n1,(unsigned int *)i_n1_t, 4);
+        add_nonce(add_nonce_1, (unsigned int *)i_n2,(unsigned int *)i_n2_t, 4);
 
-        H(i_n1, i_n2, rkeys_ffs_H, rounds);
+        H(i_n1_t, i_n2_t, rkeys_ffs_H, rounds);
+        
+        //two_Rounds_aes128_encrypt_ffs(ptext0, ptext1, i_n1, i_n2, rkeys_ffs_H);
 
-        xor_nonce( ptext0+ (i*16), i_n1, 16);
-        xor_nonce( ptext1+ (i*16), i_n2, 16);
+        xor_nonce( ptext0+ (i*16), i_n1_t, 16);
+        xor_nonce( ptext1+ (i*16), i_n2_t, 16);
 
         I(ptext0,  ptext1, rkeys_ffs, 4);
 
@@ -109,9 +103,12 @@ void ELIMAC(unsigned char* plaintext,  const unsigned char plaintext_size, unsig
 
         add_nonce(add_nonce_2, add_nonce_0,add_nonce_0, 4);
         add_nonce(add_nonce_2, add_nonce_1,add_nonce_1, 4);
+
     }
-    
+    print_array(S1,16);
+    print_array(S2,16);
     xor_nonce( S1,S2, 16);
+
 
     aes128_encrypt_ffs(tag, S2, S1,S1, rkeys_ffs);
 
